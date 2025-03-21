@@ -1,0 +1,61 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --primary-color: #B667F1;
+  --secondary-color: #F5F5F5;
+  --text-primary: #333333;
+  --text-secondary: #666666;
+  --background-primary: #FFFFFF;
+  --background-secondary: #F9F9F9;
+  --border-color: #E5E5E5;
+  --error-color: #FF4D4D;
+  --success-color: #4CAF50;
+}
+
+@layer base {
+  body {
+    @apply bg-bg-primary text-text-primary;
+    font-family: var(--font-poppins);
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-playfair);
+  }
+}
+
+@layer components {
+  .logo-text {
+    font-family: var(--font-great-vibes);
+    @apply text-primary;
+  }
+
+  .input-field {
+    @apply w-full px-4 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors;
+  }
+
+  .btn-primary {
+    @apply bg-primary text-white px-6 py-2 rounded-md hover:bg-primary/90 transition-colors disabled:opacity-50;
+  }
+
+  .btn-secondary {
+    @apply bg-secondary text-text-primary px-6 py-2 rounded-md hover:bg-secondary/90 transition-colors disabled:opacity-50;
+  }
+
+  .form-label {
+    @apply block text-sm font-medium text-text-secondary mb-1;
+  }
+
+  .error-message {
+    @apply text-error text-sm mt-1;
+  }
+
+  .success-message {
+    @apply text-success text-sm mt-1;
+  }
+
+  .card {
+    @apply bg-bg-primary rounded-lg shadow-md p-6;
+  }
+} 
