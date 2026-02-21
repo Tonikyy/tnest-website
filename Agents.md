@@ -64,6 +64,7 @@ TimeNest is a smart cancellation management platform designed for small business
 7. **Testing**: Create unit tests for all new features and ensure they work as expected.
 8. **Testing**: Run the tests and ensure they pass before completing the task.
 9. **Problem Solving**: Update this document with new guidelines if you see that beneficial for agents.
+10. **Context**: Always ask at least 2-3 questions to clarify the task before starting the implementation.
 
 ---
 *Created: 2026-02-21 | Last Updated: 2026-02-21*

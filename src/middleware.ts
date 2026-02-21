@@ -6,12 +6,13 @@ export default withAuth(
     const token = req.nextauth.token
     const isAuth = !!token
     const isAuthPage = req.nextUrl.pathname.startsWith('/login') ||
-                      req.nextUrl.pathname.startsWith('/signup') ||
-                      req.nextUrl.pathname.startsWith('/forgot-password')
+      req.nextUrl.pathname.startsWith('/signup') ||
+      req.nextUrl.pathname.startsWith('/forgot-password')
 
     if (isAuthPage) {
       if (isAuth) {
-        return NextResponse.redirect(new URL('/dashboard', req.url))
+        const dashboard = token.role === 'BUSINESS' ? '/dashboard' : '/customer/dashboard'
+        return NextResponse.redirect(new URL(dashboard, req.url))
       }
       return null
     }
@@ -37,6 +38,7 @@ export default withAuth(
 export const config = {
   matcher: [
     '/dashboard/:path*',
+    '/customer/dashboard/:path*',
     '/settings/:path*'
   ]
 } 

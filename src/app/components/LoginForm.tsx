@@ -46,20 +46,40 @@ export default function LoginForm() {
     e.preventDefault()
     if (validateForm()) {
       try {
-        const callbackUrl = searchParams.get('from') || '/dashboard'
+        const urlType = searchParams.get('type')
+        const userType = urlType || ''
+        const callbackUrl = searchParams.get('from')
+
+        console.log('LoginForm: Attempting sign-in with userType:', userType)
+
         const result = await signIn('credentials', {
           redirect: false,
           email: formData.email,
           password: formData.password,
+          userType: userType
         })
 
         if (result?.error) {
+          console.log('LoginForm: Sign-in failed:', result.error)
           setErrors(prev => ({
             ...prev,
-            general: result.error
+            general: result.error || 'Invalid credentials'
           }))
         } else {
-          router.push(callbackUrl)
+          console.log('LoginForm: Sign-in successful, fetching session')
+          // Fetch session to get user role for proper redirection if no callbackUrl is provided
+          const response = await fetch('/api/auth/session')
+          const session = await response.json()
+          console.log('LoginForm: Session data:', session)
+
+          let dashboard = '/dashboard'
+          if (session?.user?.role === 'CUSTOMER') {
+            dashboard = '/customer/dashboard'
+          }
+
+          const targetUrl = callbackUrl || dashboard
+          console.log('LoginForm: Redirecting to:', targetUrl)
+          router.push(targetUrl)
         }
       } catch (error) {
         setErrors(prev => ({
@@ -106,9 +126,8 @@ export default function LoginForm() {
             required
             value={formData.email}
             onChange={handleChange}
-            className={`appearance-none block w-full px-3 py-2 border ${
-              errors.email ? 'border-red-300' : 'border-gray-300'
-            } rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm`}
+            className={`appearance-none block w-full px-3 py-2 border ${errors.email ? 'border-red-300' : 'border-gray-300'
+              } rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm`}
           />
           {errors.email && <p className="mt-1 text-sm text-red-600">{errors.email}</p>}
         </div>
@@ -127,9 +146,8 @@ export default function LoginForm() {
             required
             value={formData.password}
             onChange={handleChange}
-            className={`appearance-none block w-full px-3 py-2 border ${
-              errors.password ? 'border-red-300' : 'border-gray-300'
-            } rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm`}
+            className={`appearance-none block w-full px-3 py-2 border ${errors.password ? 'border-red-300' : 'border-gray-300'
+              } rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm`}
           />
           {errors.password && <p className="mt-1 text-sm text-red-600">{errors.password}</p>}
         </div>

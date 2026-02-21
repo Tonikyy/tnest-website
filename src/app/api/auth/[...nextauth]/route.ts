@@ -1,9 +1,7 @@
 import { NextAuthOptions } from 'next-auth'
 import NextAuth from 'next-auth/next'
 import CredentialsProvider from 'next-auth/providers/credentials'
-import bcrypt from 'bcryptjs'
-import dbConnect from '@/lib/db'
-import { User } from '@/lib/models/user'
+import { authorizeUser } from '@/lib/auth-utils'
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -11,34 +9,11 @@ export const authOptions: NextAuthOptions = {
       name: 'Credentials',
       credentials: {
         email: { label: "Email", type: "email" },
-        password: { label: "Password", type: "password" }
+        password: { label: "Password", type: "password" },
+        userType: { label: "User Type", type: "text" }
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
-          throw new Error('Please enter an email and password')
-        }
-
-        await dbConnect()
-
-        const user = await User.findOne({ email: credentials.email }).populate('business')
-
-        if (!user) {
-          throw new Error('No user found with this email')
-        }
-
-        const passwordMatch = await bcrypt.compare(credentials.password, user.password)
-
-        if (!passwordMatch) {
-          throw new Error('Incorrect password')
-        }
-
-        return {
-          id: user._id.toString(),
-          email: user.email,
-          businessId: user.businessId?.toString(),
-          role: user.role,
-          business: user.business
-        }
+        return await authorizeUser(credentials)
       }
     })
   ],
@@ -57,6 +32,7 @@ export const authOptions: NextAuthOptions = {
           ...token,
           id: user.id,
           role: user.role,
+          name: user.name || (user as any).business?.name || null,
           businessId: user.businessId
         }
       }
@@ -66,6 +42,7 @@ export const authOptions: NextAuthOptions = {
       if (session.user) {
         session.user.id = token.id as string
         session.user.role = token.role as string
+        session.user.name = token.name as string | null
         session.user.businessId = token.businessId as string | undefined
       }
       return session
@@ -74,4 +51,4 @@ export const authOptions: NextAuthOptions = {
 }
 
 const handler = NextAuth(authOptions)
-export { handler as GET, handler as POST } 
+export { handler as GET, handler as POST }

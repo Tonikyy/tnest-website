@@ -14,11 +14,12 @@ model User {
   id            String    @id @default(cuid())
   email         String    @unique
   password      String
+  name          String?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   business      Business? @relation(fields: [businessId], references: [id])
   businessId    String?
-  role          Role      @default(USER)
+  role          Role      @default(CUSTOMER)
 }
 
 model Business {
@@ -28,9 +29,31 @@ model Business {
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
   users       User[]
+  vacancies   Vacancy[]
+}
+
+model Vacancy {
+  id          String        @id @default(cuid())
+  business    Business      @relation(fields: [businessId], references: [id])
+  businessId  String
+  startTime   DateTime
+  duration    Int           // Duration in minutes
+  serviceType String
+  notes       String?
+  status      VacancyStatus @default(ACTIVE)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
 }
 
 enum Role {
   USER
+  BUSINESS
+  CUSTOMER
   ADMIN
-} 
+}
+
+enum VacancyStatus {
+  ACTIVE
+  BOOKED
+  CANCELLED
+}

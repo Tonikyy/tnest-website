@@ -31,3 +31,12 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts 
+
+# dev accounts
+test2@business.com
+test@customer.com
+
+PW: Same
+
+# gemini
+TODO-TIMENEST-README-GEMINI.txt
