@@ -17,25 +17,17 @@ TimeNest is a modern web application designed to help small businesses efficient
 - Node.js 18.x or later
 - npm 9.x or later
 
-### Installation
-
-1. Clone the repository:
-```bash
-git clone https://github.com/yourusername/timenest.git
-cd timenest
-```
-
-2. Install dependencies:
+1. Install dependencies:
 ```bash
 npm install
 ```
 
-3. Run the development server:
+2. Run the development server:
 ```bash
 npm run dev
 ```
 
-4. Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+3. Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
 ## Development
 
