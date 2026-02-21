@@ -11,21 +11,25 @@ datasource db {
 }
 
 model User {
-  id            String    @id @default(cuid())
-  email         String    @unique
-  password      String
-  name          String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  business      Business? @relation(fields: [businessId], references: [id])
-  businessId    String?
-  role          Role      @default(CUSTOMER)
+  id              String    @id @default(cuid())
+  email           String    @unique
+  password        String
+  name            String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  business        Business? @relation(fields: [businessId], references: [id])
+  businessId      String?
+  role            Role      @default(CUSTOMER)
+  bookedVacancies Vacancy[] @relation("BookedBy")
 }
 
 model Business {
   id          String    @id @default(cuid())
   name        String
   type        String
+  address     String?
+  latitude    Float?
+  longitude   Float?
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
   users       User[]
@@ -39,8 +43,12 @@ model Vacancy {
   startTime   DateTime
   duration    Int           // Duration in minutes
   serviceType String
+  priceCents  Int            @default(0) // Customer price in cents (e.g. 6000 = 60 EUR)
   notes       String?
-  status      VacancyStatus @default(ACTIVE)
+  status      VacancyStatus  @default(ACTIVE)
+  bookedBy    User?         @relation("BookedBy", fields: [bookedById], references: [id])
+  bookedById  String?
+  bookedAt    DateTime?
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
 }

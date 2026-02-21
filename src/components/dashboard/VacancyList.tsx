@@ -2,6 +2,7 @@
 
 import { format } from 'date-fns'
 import { TrashIcon } from '@heroicons/react/24/outline'
+import { formatEur, businessReceivesCents, PLATFORM_FEE_EUR } from '@/lib/pricing'
 
 interface Vacancy {
     id: string
@@ -9,6 +10,7 @@ interface Vacancy {
     duration: number
     serviceType: string
     status: string
+    priceCents: number
     notes?: string
 }
 
@@ -48,6 +50,9 @@ export default function VacancyList({ vacancies, onDelete, loading }: VacancyLis
                                     </p>
                                     <p className="text-sm text-gray-500">
                                         {format(new Date(vacancy.startTime), 'p')} ({vacancy.duration} min)
+                                    </p>
+                                    <p className="text-xs text-gray-600 mt-0.5">
+                                        Customer pays {formatEur(vacancy.priceCents)} → You receive {formatEur(businessReceivesCents(vacancy.priceCents))} (fee €{PLATFORM_FEE_EUR})
                                     </p>
                                 </div>
                                 <div className="flex items-center space-x-4">

@@ -5,6 +5,7 @@ import { redirect } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import VacancyForm from '@/components/dashboard/VacancyForm'
 import VacancyList from '@/components/dashboard/VacancyList'
+import BusinessLocationForm from '@/components/dashboard/BusinessLocationForm'
 
 interface Vacancy {
   id: string
@@ -12,13 +13,40 @@ interface Vacancy {
   duration: number
   serviceType: string
   status: string
+  priceCents: number
   notes?: string
+}
+
+interface Business {
+  id: string
+  name: string
+  type: string
+  address: string | null
+  latitude: number | null
+  longitude: number | null
 }
 
 export default function DashboardPage() {
   const { data: session, status } = useSession()
   const [vacancies, setVacancies] = useState<Vacancy[]>([])
   const [loadingVacancies, setLoadingVacancies] = useState(true)
+  const [business, setBusiness] = useState<Business | null>(null)
+  const [loadingBusiness, setLoadingBusiness] = useState(true)
+  const [showLocationForm, setShowLocationForm] = useState(false)
+
+  const fetchBusiness = async () => {
+    try {
+      const response = await fetch('/api/business')
+      if (response.ok) {
+        const data = await response.json()
+        setBusiness(data)
+      }
+    } catch (error) {
+      console.error('Failed to fetch business:', error)
+    } finally {
+      setLoadingBusiness(false)
+    }
+  }
 
   const fetchVacancies = async () => {
     try {
@@ -36,6 +64,7 @@ export default function DashboardPage() {
 
   useEffect(() => {
     if (session?.user?.businessId) {
+      fetchBusiness()
       fetchVacancies()
     }
   }, [session])
@@ -103,7 +132,54 @@ export default function DashboardPage() {
 
             {/* Sidebar - Actions & Stats */}
             <div className="space-y-6">
-              <VacancyForm onSuccess={fetchVacancies} />
+              {loadingBusiness ? (
+                <div className="bg-white shadow rounded-lg p-6 flex justify-center">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+                </div>
+              ) : business && business.latitude != null && business.longitude != null && !showLocationForm ? (
+                <>
+                  <VacancyForm
+                    onSuccess={fetchVacancies}
+                    onLocationRequired={() => {
+                      fetchBusiness()
+                      setShowLocationForm(true)
+                    }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowLocationForm(true)}
+                    className="text-sm text-primary hover:underline"
+                  >
+                    Edit business location
+                  </button>
+                </>
+              ) : (
+                <>
+                  {!business?.latitude && !business?.longitude && (
+                    <div className="bg-amber-50 border border-amber-200 text-amber-800 text-sm p-4 rounded-lg">
+                      Set your business location below so customers can find you. You need to set it before posting vacancies.
+                    </div>
+                  )}
+                  <BusinessLocationForm
+                    onSuccess={() => {
+                      fetchBusiness()
+                      setShowLocationForm(false)
+                    }}
+                    initialAddress={business?.address}
+                    initialLatitude={business?.latitude}
+                    initialLongitude={business?.longitude}
+                  />
+                  {business?.latitude != null && business?.longitude != null && (
+                    <button
+                      type="button"
+                      onClick={() => setShowLocationForm(false)}
+                      className="text-sm text-gray-600 hover:underline"
+                    >
+                      Cancel edit location
+                    </button>
+                  )}
+                </>
+              )}
 
               <div className="bg-white shadow rounded-lg p-6">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">Business Info</h3>
