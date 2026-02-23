@@ -44,6 +44,14 @@ npm run dev
 - React 18
 - Heroicons
 
+## UI
+
+<img width="555" height="526" alt="image" src="https://github.com/user-attachments/assets/94b2895d-544e-4c1f-8a03-a679c2a40864" />
+<img width="559" height="736" alt="image" src="https://github.com/user-attachments/assets/24a41c60-dd79-4b8c-afe3-d630b36c1ea6" />
+<img width="555" height="857" alt="image" src="https://github.com/user-attachments/assets/9b90ecd5-ce40-4d4c-9a16-6571e12cb83a" />
+
+
+
 ## License
 
 This project is licensed under the MIT License - see the LICENSE file for details. 
