@@ -1,8 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import LocationMapClient from './LocationMapClient'
 import { searchAddress, reverseGeocode, getCurrentPositionAsync } from '@/lib/geocoding'
+import { formatFinnishAddress } from '@/lib/address-utils'
 
 interface BusinessLocationFormProps {
   onSuccess: () => void
@@ -25,6 +26,36 @@ export default function BusinessLocationForm({
   const [latitude, setLatitude] = useState<number | null>(initialLatitude ?? null)
   const [longitude, setLongitude] = useState<number | null>(initialLongitude ?? null)
 
+  useEffect(() => {
+    // Only attempt auto-location if the business doesn't already have one saved
+    if (initialLatitude == null && initialLongitude == null) {
+      let mounted = true
+      if (typeof navigator !== 'undefined' && navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          async (position) => {
+            if (!mounted) return
+            const lat = position.coords.latitude
+            const lng = position.coords.longitude
+            setLatitude((prev) => (prev === null ? lat : prev))
+            setLongitude((prev) => (prev === null ? lng : prev))
+            try {
+              const name = await reverseGeocode(lat, lng)
+              if (name && mounted) {
+                setAddress((prev) => (prev === '' ? formatFinnishAddress(name) : prev))
+              }
+            } catch {
+              // ignore
+            }
+          },
+          () => {
+            // Silent failure
+          }
+        )
+      }
+      return () => { mounted = false }
+    }
+  }, [initialLatitude, initialLongitude])
+
   const handleSearchAddress = async () => {
     const q = searchQuery.trim()
     if (!q) return
@@ -35,7 +66,7 @@ export default function BusinessLocationForm({
       if (result) {
         setLatitude(result.lat)
         setLongitude(result.lng)
-        setAddress(result.displayName)
+        setAddress(formatFinnishAddress(result.displayName))
       } else {
         setError('Address not found. Try a different search.')
       }
@@ -52,7 +83,7 @@ export default function BusinessLocationForm({
     setError(null)
     try {
       const name = await reverseGeocode(lat, lng)
-      if (name) setAddress(name)
+      if (name) setAddress(formatFinnishAddress(name))
     } catch {
       // keep existing address or leave blank
     }
@@ -66,7 +97,7 @@ export default function BusinessLocationForm({
       setLongitude(lng)
       try {
         const name = await reverseGeocode(lat, lng)
-        if (name) setAddress(name)
+        if (name) setAddress(formatFinnishAddress(name))
       } catch {
         // ignore
       }
@@ -111,15 +142,15 @@ export default function BusinessLocationForm({
   return (
     <form
       onSubmit={handleSubmit}
-      className="space-y-4 bg-white p-6 rounded-lg shadow-sm border border-gray-100"
+      className="space-y-4 bg-white dark:bg-gray-900 p-6 rounded-lg shadow-sm border border-gray-100 dark:border-gray-800 transition-colors duration-200"
     >
-      <h3 className="text-lg font-semibold text-gray-900 mb-4">Business location</h3>
-      <p className="text-sm text-gray-600">
+      <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Business location</h3>
+      <p className="text-sm text-gray-600 dark:text-gray-400">
         Search for your address or click on the map to set your location. Customers will use this to find you.
       </p>
 
       {error && (
-        <div className="bg-red-50 text-red-600 p-3 rounded-md text-sm">{error}</div>
+        <div className="bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 p-3 rounded-md text-sm">{error}</div>
       )}
 
       <div className="flex gap-2">
@@ -128,8 +159,8 @@ export default function BusinessLocationForm({
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleSearchAddress())}
-          placeholder="Search address (e.g. 123 Main St, Berlin)"
-          className="flex-1 rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2 border"
+          placeholder="Search address (e.g. Mannerheimintie 1, Helsinki)"
+          className="flex-1 rounded-md border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2 border transition-colors"
         />
         <button
           type="button"
@@ -142,8 +173,8 @@ export default function BusinessLocationForm({
       </div>
 
       <div>
-        <p className="text-sm font-medium text-gray-700 mb-1">Map</p>
-        <p className="text-xs text-gray-500 mb-2">
+        <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Map</p>
+        <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
           Click on the map to set your location, or drag the marker. Address updates automatically.
         </p>
         <LocationMapClient
@@ -156,8 +187,8 @@ export default function BusinessLocationForm({
 
       {address && (
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Address (saved with location)</label>
-          <p className="text-sm text-gray-600 bg-gray-50 p-2 rounded border border-gray-100">{address}</p>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Address (saved with location)</label>
+          <p className="text-sm text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800 p-2 rounded border border-gray-100 dark:border-gray-700">{address}</p>
         </div>
       )}
 

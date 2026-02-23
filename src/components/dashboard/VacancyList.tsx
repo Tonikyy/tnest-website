@@ -31,43 +31,43 @@ export default function VacancyList({ vacancies, onDelete, loading }: VacancyLis
 
     if (vacancies.length === 0) {
         return (
-            <div className="text-center py-8 bg-gray-50 rounded-lg border-2 border-dashed border-gray-200">
-                <p className="text-gray-500">No active vacancies posted yet.</p>
+            <div className="text-center py-8 bg-gray-50 dark:bg-gray-800/50 rounded-lg border-2 border-dashed border-gray-200 dark:border-gray-700">
+                <p className="text-gray-500 dark:text-gray-400">No active vacancies posted yet.</p>
             </div>
         )
     }
 
     return (
-        <div className="overflow-hidden bg-white shadow sm:rounded-md border border-gray-100">
-            <ul className="divide-y divide-gray-200">
+        <div className="overflow-hidden bg-white dark:bg-gray-900 shadow sm:rounded-md border border-gray-100 dark:border-gray-800 transition-colors duration-200">
+            <ul className="divide-y divide-gray-200 dark:divide-gray-800">
                 {vacancies.map((vacancy) => (
                     <li key={vacancy.id}>
-                        <div className="px-4 py-4 sm:px-6 hover:bg-gray-50 transition-colors">
+                        <div className="px-4 py-4 sm:px-6 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
                             <div className="flex items-center justify-between">
                                 <div className="flex flex-col">
                                     <p className="text-sm font-bold text-primary truncate">
                                         {vacancy.serviceType}
                                     </p>
-                                    <p className="text-sm text-gray-500">
+                                    <p className="text-sm text-gray-500 dark:text-gray-400">
                                         {format(new Date(vacancy.startTime), 'p')} ({vacancy.duration} min)
                                     </p>
-                                    <p className="text-xs text-gray-600 mt-0.5">
+                                    <p className="text-xs text-gray-600 dark:text-gray-400 mt-0.5">
                                         Customer pays {formatEur(vacancy.priceCents)} → You receive {formatEur(businessReceivesCents(vacancy.priceCents))} (fee €{PLATFORM_FEE_EUR})
                                     </p>
                                 </div>
                                 <div className="flex items-center space-x-4">
                                     <div className="flex flex-col items-end">
-                                        <p className="text-sm font-medium text-gray-900">
+                                        <p className="text-sm font-medium text-gray-900 dark:text-gray-200">
                                             {format(new Date(vacancy.startTime), 'MMM d, yyyy')}
                                         </p>
-                                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${vacancy.status === 'ACTIVE' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${vacancy.status === 'ACTIVE' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' : 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300'
                                             }`}>
                                             {vacancy.status}
                                         </span>
                                     </div>
                                     <button
                                         onClick={() => onDelete(vacancy.id)}
-                                        className="p-2 text-gray-400 hover:text-red-600 transition-colors"
+                                        className="p-2 text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
                                         title="Delete vacancy"
                                     >
                                         <TrashIcon className="h-5 w-5" />
@@ -75,9 +75,9 @@ export default function VacancyList({ vacancies, onDelete, loading }: VacancyLis
                                 </div>
                             </div>
                             {vacancy.notes && (
-                                <div className="mt-2">
-                                    <p className="text-xs text-gray-400 italic">
-                                        Note: {vacancy.notes}
+                                <div className="mt-2 text-gray-500 dark:text-gray-400">
+                                    <p className="text-xs italic">
+                                        {vacancy.notes}
                                     </p>
                                 </div>
                             )}

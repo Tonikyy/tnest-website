@@ -6,6 +6,7 @@ import { format } from 'date-fns'
 import VacancyCard, { type VacancySearchItem } from './VacancyCard'
 import LocationMapClient from '@/components/dashboard/LocationMapClient'
 import { searchAddress, reverseGeocode, getCurrentPositionAsync } from '@/lib/geocoding'
+import { formatFinnishAddress } from '@/lib/address-utils'
 
 interface BookedVacancy {
   id: string
@@ -86,6 +87,37 @@ export default function CustomerDashboard() {
     }
   }, [status, session])
 
+  useEffect(() => {
+    let mounted = true
+    if (typeof navigator !== 'undefined' && navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        async (position) => {
+          if (!mounted) return
+
+          const lat = position.coords.latitude
+          const lng = position.coords.longitude
+
+          // Only update if the user hasn't manually set it already
+          setLatitude((prev) => (prev === null ? lat : prev))
+          setLongitude((prev) => (prev === null ? lng : prev))
+
+          try {
+            const name = await reverseGeocode(lat, lng)
+            if (name && mounted) {
+              setAddress((prev) => (prev === '' ? name : prev))
+            }
+          } catch {
+            // ignore
+          }
+        },
+        () => {
+          // Silent failure - map just remains on default Helsinki
+        }
+      )
+    }
+    return () => { mounted = false }
+  }, [])
+
   const handleSearchAddress = async () => {
     const q = searchQuery.trim()
     if (!q) return
@@ -159,14 +191,14 @@ export default function CustomerDashboard() {
 
   return (
     <div className="max-w-4xl mx-auto space-y-8">
-      <section className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">Find vacancies</h2>
-        <p className="text-sm text-gray-600 mb-4">
+      <section className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 shadow-sm p-6 transition-colors duration-200">
+        <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Find vacancies</h2>
+        <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
           Set your location with “Use my location”, search an address, or tap the map. Then choose max distance and search.
         </p>
 
         {locationError && (
-          <div className="mb-4 bg-amber-50 border border-amber-200 text-amber-800 text-sm p-3 rounded-md">
+          <div className="mb-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-400 text-sm p-3 rounded-md">
             {locationError}
           </div>
         )}
@@ -177,8 +209,8 @@ export default function CustomerDashboard() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleSearchAddress())}
-            placeholder="Search address (e.g. 123 Main St, Berlin)"
-            className="flex-1 rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2 border"
+            placeholder="Search address (e.g. Mannerheimintie 1, Helsinki)"
+            className="flex-1 rounded-md border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2 border transition-colors"
           />
           <button
             type="button"
@@ -191,8 +223,8 @@ export default function CustomerDashboard() {
         </div>
 
         <div className="mb-4">
-          <p className="text-sm font-medium text-gray-700 mb-1">Map</p>
-          <p className="text-xs text-gray-500 mb-2">
+          <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Map</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
             Tap the map to set your location, or drag the marker. Great on mobile.
           </p>
           <LocationMapClient
@@ -204,7 +236,7 @@ export default function CustomerDashboard() {
         </div>
 
         {address && (
-          <p className="text-sm text-gray-600 bg-gray-50 p-2 rounded border border-gray-100 mb-4">
+          <p className="text-sm text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800/50 p-2 rounded border border-gray-100 dark:border-gray-700 mb-4 transition-colors">
             {address}
           </p>
         )}
@@ -220,9 +252,9 @@ export default function CustomerDashboard() {
           </button>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-gray-100">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-gray-100 dark:border-gray-800">
           <div>
-            <label className="form-label">Max distance (km)</label>
+            <label className="form-label text-gray-700 dark:text-gray-300">Max distance (km)</label>
             <input
               type="number"
               min="0"
@@ -233,7 +265,7 @@ export default function CustomerDashboard() {
             />
           </div>
           <div>
-            <label className="form-label">Service type (optional)</label>
+            <label className="form-label text-gray-700 dark:text-gray-300">Service type (optional)</label>
             <input
               type="text"
               value={serviceType}
@@ -258,7 +290,7 @@ export default function CustomerDashboard() {
 
       {results.length > 0 && (
         <section>
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Results</h2>
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Results</h2>
           <ul className="space-y-4">
             {results.map((v) => (
               <li key={v.id}>
@@ -275,43 +307,67 @@ export default function CustomerDashboard() {
       )}
 
       {session?.user && (
-        <section className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">My Bookings</h2>
+        <section className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 shadow-sm p-6 transition-colors duration-200">
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">My Bookings</h2>
           {loadingBooked ? (
             <div className="flex justify-center py-6">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
             </div>
           ) : booked.length === 0 ? (
-            <p className="text-gray-500">You have no bookings yet.</p>
+            <p className="text-gray-500 dark:text-gray-400">You have no bookings yet.</p>
           ) : (
-            <ul className="divide-y divide-gray-200">
-              {booked.map((v) => (
-                <li key={v.id} className="py-4 first:pt-0">
-                  <div className="flex flex-wrap items-start justify-between gap-2">
-                    <div>
-                      <p className="font-medium text-gray-900">{v.business.name}</p>
-                      <p className="text-sm text-primary">{v.serviceType}</p>
-                      {v.business.address && (
-                        <p className="text-sm text-gray-500">{v.business.address}</p>
-                      )}
-                      <p className="text-sm text-gray-600 mt-1">
-                        {format(new Date(v.startTime), 'EEE, MMM d, yyyy')} at{' '}
-                        {format(new Date(v.startTime), 'p')} ({v.duration} min)
-                      </p>
+            <ul className="divide-y divide-gray-200 dark:divide-gray-800">
+              {booked.map((v) => {
+                const businessInitial = v.business.name ? v.business.name.charAt(0).toUpperCase() : 'B'
+                const displayName = v.business.name.includes('@')
+                  ? v.business.name.split('@')[0]
+                  : v.business.name
+
+                return (
+                  <li key={v.id} className="py-4 first:pt-0">
+                    <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+
+                      <div className="flex items-start gap-3 flex-1 min-w-0">
+                        {/* Avatar */}
+                        <div className="mt-1 h-10 w-10 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-lg flex-shrink-0">
+                          {businessInitial}
+                        </div>
+
+                        <div className="min-w-0">
+                          <p className="font-semibold text-gray-900 dark:text-gray-100 truncate">{displayName}</p>
+                          <p className="text-sm text-primary font-medium mt-0.5">{v.serviceType}</p>
+
+                          {v.business.address && (
+                            <div className="flex items-start text-sm text-gray-500 dark:text-gray-400 mt-1">
+                              <span className="truncate">
+                                {formatFinnishAddress(v.business.address)}
+                              </span>
+                            </div>
+                          )}
+
+                          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                            {format(new Date(v.startTime), 'EEE, MMM d, yyyy')} at{' '}
+                            {format(new Date(v.startTime), 'p')} ({v.duration} min)
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex-shrink-0 sm:mt-0 mt-2">
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary">
+                          Booked
+                        </span>
+                      </div>
                     </div>
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary">
-                      Booked
-                    </span>
-                  </div>
-                </li>
-              ))}
+                  </li>
+                )
+              })}
             </ul>
           )}
         </section>
       )}
 
       {!session?.user && (
-        <p className="text-center text-gray-500 text-sm">
+        <p className="text-center text-gray-500 dark:text-gray-400 text-sm mt-8">
           Sign in to book vacancies and see your bookings.
         </p>
       )}

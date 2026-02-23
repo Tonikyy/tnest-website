@@ -3,9 +3,9 @@
 import { useSession } from 'next-auth/react'
 import { redirect } from 'next/navigation'
 import { useState, useEffect } from 'react'
+import Link from 'next/link'
 import VacancyForm from '@/components/dashboard/VacancyForm'
 import VacancyList from '@/components/dashboard/VacancyList'
-import BusinessLocationForm from '@/components/dashboard/BusinessLocationForm'
 
 interface Vacancy {
   id: string
@@ -102,98 +102,76 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
-      <main className="flex-1 py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-900">Business Dashboard</h1>
-            <p className="mt-2 text-gray-600">
-              Manage your cancellations and vacancies for {session.user.email}
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
+      <main className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+        <div className="md:flex md:items-center md:justify-between mb-8">
+          <div className="flex-1 min-w-0">
+            <h2 className="text-3xl font-bold leading-7 text-gray-900 dark:text-gray-100 sm:text-4xl sm:truncate">
+              Business Dashboard
+            </h2>
+            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+              Manage your cancellations and vacancies for {session?.user?.email}
             </p>
           </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Main Content - Vacancy List */}
-            <div className="lg:col-span-2 space-y-6">
-              <div className="bg-white shadow rounded-lg p-6">
-                <h2 className="text-xl font-semibold mb-6 flex items-center justify-between">
-                  Active Vacancies
-                  <span className="bg-primary/10 text-primary text-xs px-2.5 py-0.5 rounded-full">
-                    {vacancies.length} Total
-                  </span>
-                </h2>
-                <VacancyList
-                  vacancies={vacancies}
-                  onDelete={handleDeleteVacancy}
-                  loading={loadingVacancies}
-                />
-              </div>
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Main Content - Vacancy List */}
+          <div className="lg:col-span-2 space-y-6">
+            <div className="bg-white dark:bg-gray-900 shadow-sm rounded-lg p-6 border border-gray-100 dark:border-gray-800 transition-colors duration-200">
+              <h2 className="text-xl font-semibold mb-6 flex items-center justify-between text-gray-900 dark:text-gray-100">
+                Active Vacancies
+                <span className="bg-primary/10 text-primary text-xs px-2.5 py-0.5 rounded-full">
+                  {vacancies.length} Total
+                </span>
+              </h2>
+              <VacancyList
+                vacancies={vacancies}
+                onDelete={handleDeleteVacancy}
+                loading={loadingVacancies}
+              />
             </div>
+          </div>
 
-            {/* Sidebar - Actions & Stats */}
-            <div className="space-y-6">
-              {loadingBusiness ? (
-                <div className="bg-white shadow rounded-lg p-6 flex justify-center">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+          {/* Sidebar - Actions & Stats */}
+          <div className="space-y-6">
+            {loadingBusiness ? (
+              <div className="bg-white shadow rounded-lg p-6 flex justify-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+              </div>
+            ) : business && business.latitude != null && business.longitude != null ? (
+              <VacancyForm
+                onSuccess={fetchVacancies}
+                onLocationRequired={() => {
+                  // Using redirect instead of showing LocationForm locally
+                  window.location.href = '/dashboard/settings'
+                }}
+              />
+            ) : (
+              <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 p-6 rounded-lg text-center">
+                <h3 className="text-amber-800 dark:text-amber-400 font-semibold mb-2">Location Required</h3>
+                <p className="text-amber-700 dark:text-amber-300 text-sm mb-4">
+                  You need to set your business location in your settings before you can post vacancies to customers.
+                </p>
+                <Link
+                  href="/dashboard/settings"
+                  className="inline-block bg-primary hover:bg-primary/90 text-white font-medium py-2 px-4 rounded transition-colors"
+                >
+                  Go to Settings
+                </Link>
+              </div>
+            )}
+
+            {/* Business Info / Status Card */}
+            <div className="bg-white dark:bg-gray-900 p-6 rounded-lg shadow-sm border border-gray-100 dark:border-gray-800 transition-colors duration-200">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Business Info</h3>
+              <div className="space-y-4">
+                <div>
+                  <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Email</p>
+                  <p className="mt-1 text-sm text-gray-900 dark:text-gray-300">{session?.user?.email}</p>
                 </div>
-              ) : business && business.latitude != null && business.longitude != null && !showLocationForm ? (
-                <>
-                  <VacancyForm
-                    onSuccess={fetchVacancies}
-                    onLocationRequired={() => {
-                      fetchBusiness()
-                      setShowLocationForm(true)
-                    }}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowLocationForm(true)}
-                    className="text-sm text-primary hover:underline"
-                  >
-                    Edit business location
-                  </button>
-                </>
-              ) : (
-                <>
-                  {!business?.latitude && !business?.longitude && (
-                    <div className="bg-amber-50 border border-amber-200 text-amber-800 text-sm p-4 rounded-lg">
-                      Set your business location below so customers can find you. You need to set it before posting vacancies.
-                    </div>
-                  )}
-                  <BusinessLocationForm
-                    onSuccess={() => {
-                      fetchBusiness()
-                      setShowLocationForm(false)
-                    }}
-                    initialAddress={business?.address}
-                    initialLatitude={business?.latitude}
-                    initialLongitude={business?.longitude}
-                  />
-                  {business?.latitude != null && business?.longitude != null && (
-                    <button
-                      type="button"
-                      onClick={() => setShowLocationForm(false)}
-                      className="text-sm text-gray-600 hover:underline"
-                    >
-                      Cancel edit location
-                    </button>
-                  )}
-                </>
-              )}
-
-              <div className="bg-white shadow rounded-lg p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Business Info</h3>
-                <div className="space-y-3">
-                  <div>
-                    <p className="text-xs text-gray-500 uppercase font-bold">Email</p>
-                    <p className="text-sm text-gray-900">{session.user.email}</p>
-                  </div>
-                  {session.user.businessId && (
-                    <div>
-                      <p className="text-xs text-gray-500 uppercase font-bold">Business ID</p>
-                      <p className="text-sm font-mono text-gray-600 break-all">{session.user.businessId}</p>
-                    </div>
-                  )}
+                <div>
+                  <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Business ID</p>
+                  <p className="mt-1 text-xs text-gray-500 dark:text-gray-500 font-mono break-all">{session?.user?.businessId}</p>
                 </div>
               </div>
             </div>

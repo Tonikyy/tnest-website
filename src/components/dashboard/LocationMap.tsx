@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from 'react'
 
-const defaultCenter: [number, number] = [52.52, 13.405]
+const defaultCenter: [number, number] = [60.1695, 24.9354]
 const defaultZoom = 10
 
 export interface LocationMapProps {
@@ -36,8 +36,11 @@ export default function LocationMap({
     const map = L.map(mapRef.current).setView(center, defaultZoom)
     mapInstanceRef.current = map
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+    // Using CartoDB Positron for a light, minimalistic map style
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+      subdomains: 'abcd',
+      maxZoom: 20
     }).addTo(map)
 
     const icon = L.icon({
@@ -50,7 +53,7 @@ export default function LocationMap({
 
     const updateMarker = (lat: number, lng: number) => {
       if (markerRef.current) {
-        ;(markerRef.current as { setLatLng: (latlng: [number, number]) => void }).setLatLng([lat, lng])
+        ; (markerRef.current as { setLatLng: (latlng: [number, number]) => void }).setLatLng([lat, lng])
       } else {
         const marker = L.marker([lat, lng], { icon, draggable: true })
           .addTo(map)
@@ -86,7 +89,7 @@ export default function LocationMap({
     if (hasPosition) {
       const L = require('leaflet')
       if (markerRef.current) {
-        ;(markerRef.current as { setLatLng: (latlng: [number, number]) => void }).setLatLng([latitude!, longitude!])
+        ; (markerRef.current as { setLatLng: (latlng: [number, number]) => void }).setLatLng([latitude!, longitude!])
       } else {
         const icon = L.icon({
           iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
@@ -105,7 +108,7 @@ export default function LocationMap({
       }
       map.setView([latitude!, longitude!], map.getZoom())
     } else if (markerRef.current) {
-      ;(map as { removeLayer: (layer: unknown) => void }).removeLayer(markerRef.current)
+      ; (map as { removeLayer: (layer: unknown) => void }).removeLayer(markerRef.current)
       markerRef.current = null
     }
   }, [hasPosition, latitude, longitude])

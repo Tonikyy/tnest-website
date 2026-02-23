@@ -35,12 +35,14 @@ export async function PATCH(req: Request) {
 
   try {
     const body = await req.json()
-    const { address, latitude, longitude } = body
+    const { address, latitude, longitude, name, type } = body
 
-    const data: { address?: string; latitude?: number; longitude?: number } = {}
+    const data: { address?: string; latitude?: number; longitude?: number; name?: string; type?: string } = {}
     if (typeof address === 'string') data.address = address
     if (typeof latitude === 'number' && !Number.isNaN(latitude)) data.latitude = latitude
     if (typeof longitude === 'number' && !Number.isNaN(longitude)) data.longitude = longitude
+    if (typeof name === 'string' && name.trim().length > 0) data.name = name.trim()
+    if (typeof type === 'string' && type.trim().length > 0) data.type = type.trim()
 
     const business = await prisma.business.update({
       where: { id: session.user.businessId },

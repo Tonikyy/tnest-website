@@ -31,18 +31,22 @@ export const metadata: Metadata = {
   description: 'Streamline your business operations with TimeNest. Manage cancellations, appointments, and customer communications all in one place.',
 }
 
+import { ThemeProvider } from '@/components/ThemeProvider'
+
 export default function RootLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className={`${poppins.variable} ${playfair.variable} ${greatVibes.variable}`}>
-      <body className="font-sans antialiased">
-        <Providers>
-          <Navbar />
-          {children}
-        </Providers>
+    <html lang="en" className={`${poppins.variable} ${playfair.variable} ${greatVibes.variable}`} suppressHydrationWarning>
+      <body className="font-sans antialiased bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors duration-200">
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          <Providers>
+            <Navbar />
+            {children}
+          </Providers>
+        </ThemeProvider>
       </body>
     </html>
   )
