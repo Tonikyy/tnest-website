@@ -3,13 +3,14 @@
 import Link from 'next/link'
 import SignUpForm from '../components/SignUpForm'
 import { useSearchParams } from 'next/navigation'
+import { Suspense } from 'react'
 
-export default function SignUpPage() {
+function SignUpContent() {
   const searchParams = useSearchParams()
   const defaultType = (searchParams.get('type') as 'business' | 'customer') || 'business'
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+    <>
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
           {defaultType === 'business' ? 'Create your business account' : 'Create your customer account'}
@@ -27,6 +28,16 @@ export default function SignUpPage() {
           <SignUpForm initialType={defaultType} />
         </div>
       </div>
+    </>
+  )
+}
+
+export default function SignUpPage() {
+  return (
+    <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+      <Suspense fallback={<div className="sm:mx-auto sm:w-full sm:max-w-md h-20 animate-pulse bg-gray-200 rounded-lg" />}>
+        <SignUpContent />
+      </Suspense>
     </div>
   )
 }

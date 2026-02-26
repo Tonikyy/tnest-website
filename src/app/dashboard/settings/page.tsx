@@ -6,6 +6,7 @@ import { useState, useEffect } from 'react'
 import BusinessLocationForm from '@/components/dashboard/BusinessLocationForm'
 import BusinessProfileForm from '@/components/dashboard/BusinessProfileForm'
 import AccountSettingsForm from '@/components/dashboard/AccountSettingsForm'
+import BrandSpinner from '@/components/BrandSpinner'
 
 interface Business {
     id: string
@@ -69,14 +70,22 @@ export default function SettingsPage() {
         return (
             <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col justify-center py-12 sm:px-6 lg:px-8 transition-colors duration-200">
                 <div className="flex justify-center">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+                    <BrandSpinner size={148} />
                 </div>
             </div>
         )
     }
 
-    if (!session || !session.user.businessId) {
-        redirect('/login')
+    if (!session) {
+        redirect('/login?type=business')
+    }
+
+    if (session.user.role !== 'BUSINESS') {
+        redirect('/customer/settings')
+    }
+
+    if (!session.user.businessId) {
+        redirect('/dashboard')
     }
 
     return (

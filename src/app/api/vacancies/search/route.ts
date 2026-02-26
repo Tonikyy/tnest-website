@@ -2,9 +2,14 @@ import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
 import { haversineDistanceKm } from '@/lib/haversine'
 
-export async function GET(req: NextRequest) {
+export const dynamic = 'force-dynamic'
+
+export async function GET(req: NextRequest | Request) {
   try {
-    const { searchParams } = new URL(req.url)
+    const searchParams =
+      'nextUrl' in req && req.nextUrl
+        ? req.nextUrl.searchParams
+        : new URL(req.url).searchParams
     const latParam = searchParams.get('lat')
     const lngParam = searchParams.get('lng')
     const maxDistanceKmParam = searchParams.get('maxDistanceKm')

@@ -7,6 +7,7 @@ import VacancyCard, { type VacancySearchItem } from './VacancyCard'
 import LocationMapClient from '@/components/dashboard/LocationMapClient'
 import { searchAddress, reverseGeocode, getCurrentPositionAsync } from '@/lib/geocoding'
 import { formatFinnishAddress } from '@/lib/address-utils'
+import BrandSpinner from '@/components/BrandSpinner'
 
 interface BookedVacancy {
   id: string
@@ -24,6 +25,13 @@ interface BookedVacancy {
   }
 }
 
+interface CustomerSettings {
+  defaultMaxDistanceKm: number
+  defaultServiceType: string
+  homeAddress: string
+  shareLocationOnSearch: boolean
+}
+
 export default function CustomerDashboard() {
   const { data: session, status } = useSession()
   const [latitude, setLatitude] = useState<number | null>(null)
@@ -35,6 +43,8 @@ export default function CustomerDashboard() {
   const [gettingLocation, setGettingLocation] = useState(false)
   const [maxDistanceKm, setMaxDistanceKm] = useState('10')
   const [serviceType, setServiceType] = useState('')
+  const [homeAddress, setHomeAddress] = useState('')
+  const [shareLocationOnSearch, setShareLocationOnSearch] = useState(false)
   const [results, setResults] = useState<VacancySearchItem[]>([])
   const [loadingSearch, setLoadingSearch] = useState(false)
   const [booked, setBooked] = useState<BookedVacancy[]>([])
@@ -81,11 +91,31 @@ export default function CustomerDashboard() {
     }
   }
 
+  const fetchCustomerSettings = async () => {
+    try {
+      const res = await fetch('/api/user/customer-settings')
+      if (!res.ok) return
+      const data: CustomerSettings = await res.json()
+      setMaxDistanceKm(String(data.defaultMaxDistanceKm || 10))
+      setServiceType(data.defaultServiceType || '')
+      setHomeAddress(data.homeAddress || '')
+      setShareLocationOnSearch(Boolean(data.shareLocationOnSearch))
+    } catch (e) {
+      console.error(e)
+    }
+  }
+
   useEffect(() => {
     if (status === 'authenticated' && session?.user) {
       fetchBooked()
+      fetchCustomerSettings()
     }
   }, [status, session])
+
+  useEffect(() => {
+    if (!shareLocationOnSearch || !homeAddress || latitude != null || longitude != null) return
+    setSearchQuery(homeAddress)
+  }, [shareLocationOnSearch, homeAddress, latitude, longitude])
 
   useEffect(() => {
     let mounted = true
@@ -118,8 +148,8 @@ export default function CustomerDashboard() {
     return () => { mounted = false }
   }, [])
 
-  const handleSearchAddress = async () => {
-    const q = searchQuery.trim()
+  const handleSearchAddress = async (query?: string) => {
+    const q = (query ?? searchQuery).trim()
     if (!q) return
     setSearchingAddress(true)
     setLocationError(null)
@@ -214,13 +244,33 @@ export default function CustomerDashboard() {
           />
           <button
             type="button"
-            onClick={handleSearchAddress}
+            onClick={() => {
+              void handleSearchAddress()
+            }}
             disabled={searchingAddress}
             className="btn-primary px-4 py-2 text-sm whitespace-nowrap disabled:opacity-50"
           >
             {searchingAddress ? 'Searching…' : 'Search'}
           </button>
         </div>
+
+        {shareLocationOnSearch && homeAddress && (
+          <div className="mb-4 flex items-center justify-between gap-2 bg-gray-50 dark:bg-gray-800/40 border border-gray-100 dark:border-gray-700 rounded-md p-2">
+            <p className="text-xs text-gray-600 dark:text-gray-400 truncate">
+              Saved home address: {homeAddress}
+            </p>
+            <button
+              type="button"
+              onClick={() => {
+                setSearchQuery(homeAddress)
+                handleSearchAddress(homeAddress)
+              }}
+              className="text-xs font-medium text-primary hover:underline whitespace-nowrap"
+            >
+              Use saved address
+            </button>
+          </div>
+        )}
 
         <div className="mb-4">
           <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Map</p>
@@ -311,7 +361,7 @@ export default function CustomerDashboard() {
           <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">My Bookings</h2>
           {loadingBooked ? (
             <div className="flex justify-center py-6">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+              <BrandSpinner size={96} />
             </div>
           ) : booked.length === 0 ? (
             <p className="text-gray-500 dark:text-gray-400">You have no bookings yet.</p>

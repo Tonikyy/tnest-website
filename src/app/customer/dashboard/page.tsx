@@ -3,6 +3,7 @@
 import { useSession } from 'next-auth/react'
 import { redirect } from 'next/navigation'
 import CustomerDashboard from '@/components/customer/CustomerDashboard'
+import BrandSpinner from '@/components/BrandSpinner'
 
 export default function CustomerDashboardPage() {
   const { data: session, status } = useSession()
@@ -11,10 +12,18 @@ export default function CustomerDashboardPage() {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col justify-center py-12 transition-colors duration-200">
         <div className="flex justify-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary" />
+          <BrandSpinner size={148} />
         </div>
       </div>
     )
+  }
+
+  if (!session) {
+    redirect('/login?type=customer')
+  }
+
+  if (session.user.role === 'BUSINESS') {
+    redirect('/dashboard')
   }
 
   return (

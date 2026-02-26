@@ -3,6 +3,7 @@
 import { format } from 'date-fns'
 import { TrashIcon } from '@heroicons/react/24/outline'
 import { formatEur, businessReceivesCents, PLATFORM_FEE_EUR } from '@/lib/pricing'
+import BrandSpinner from '@/components/BrandSpinner'
 
 interface Vacancy {
     id: string
@@ -24,7 +25,7 @@ export default function VacancyList({ vacancies, onDelete, loading }: VacancyLis
     if (loading) {
         return (
             <div className="flex justify-center py-8">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                <BrandSpinner size={96} />
             </div>
         )
     }

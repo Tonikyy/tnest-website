@@ -6,6 +6,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import VacancyForm from '@/components/dashboard/VacancyForm'
 import VacancyList from '@/components/dashboard/VacancyList'
+import BrandSpinner from '@/components/BrandSpinner'
 
 interface Vacancy {
   id: string
@@ -91,14 +92,18 @@ export default function DashboardPage() {
     return (
       <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
         <div className="flex justify-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+          <BrandSpinner size={148} />
         </div>
       </div>
     )
   }
 
   if (!session) {
-    redirect('/login')
+    redirect('/login?type=business')
+  }
+
+  if (session.user.role !== 'BUSINESS') {
+    redirect('/customer/dashboard')
   }
 
   return (
@@ -136,7 +141,7 @@ export default function DashboardPage() {
           <div className="space-y-6">
             {loadingBusiness ? (
               <div className="bg-white shadow rounded-lg p-6 flex justify-center">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+                <BrandSpinner size={96} />
               </div>
             ) : business && business.latitude != null && business.longitude != null ? (
               <VacancyForm

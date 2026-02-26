@@ -20,7 +20,23 @@ model User {
   business        Business? @relation(fields: [businessId], references: [id])
   businessId      String?
   role            Role      @default(CUSTOMER)
+  customerSettings CustomerSettings?
   bookedVacancies Vacancy[] @relation("BookedBy")
+}
+
+model CustomerSettings {
+  id                       String   @id @default(cuid())
+  userId                   String   @unique
+  user                     User     @relation(fields: [userId], references: [id])
+  notifyBookingReminders   Boolean  @default(true)
+  notifyCancellationAlerts Boolean  @default(true)
+  notifyMarketing          Boolean  @default(false)
+  defaultMaxDistanceKm     Int      @default(10)
+  defaultServiceType       String?
+  homeAddress              String?
+  shareLocationOnSearch    Boolean  @default(false)
+  createdAt                DateTime @default(now())
+  updatedAt                DateTime @updatedAt
 }
 
 model Business {
