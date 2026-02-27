@@ -21,6 +21,7 @@ interface BookedVacancy {
     id: string
     name: string
     type: string
+    logo: string | null
     address: string | null
   }
 }
@@ -379,8 +380,12 @@ export default function CustomerDashboard() {
 
                       <div className="flex items-start gap-3 flex-1 min-w-0">
                         {/* Avatar */}
-                        <div className="mt-1 h-10 w-10 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-lg flex-shrink-0">
-                          {businessInitial}
+                        <div className="mt-1 h-10 w-10 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-lg flex-shrink-0 overflow-hidden border border-primary/20">
+                          {v.business.logo ? (
+                            <img src={v.business.logo} alt="Business logo" className="h-full w-full object-cover" />
+                          ) : (
+                            businessInitial
+                          )}
                         </div>
 
                         <div className="min-w-0">

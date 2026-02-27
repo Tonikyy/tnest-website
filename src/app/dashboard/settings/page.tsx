@@ -12,6 +12,7 @@ interface Business {
     id: string
     name: string
     type: string
+    logo: string | null
     address: string | null
     latitude: number | null
     longitude: number | null
@@ -88,6 +89,8 @@ export default function SettingsPage() {
         redirect('/dashboard')
     }
 
+    const userInitial = (session.user.name?.[0] || session.user.email?.[0] || '?').toUpperCase()
+
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col transition-colors duration-200">
             <main className="flex-1 py-12 px-4 sm:px-6 lg:px-8">
@@ -100,12 +103,29 @@ export default function SettingsPage() {
                         </p>
                     </div>
 
+                    <div className="mb-8 bg-white dark:bg-gray-900 rounded-lg border border-gray-100 dark:border-gray-800 shadow-sm p-4 transition-colors duration-200">
+                        <div className="flex items-center gap-3">
+                            <div className="h-12 w-12 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-sm overflow-hidden border border-primary/20">
+                                {business?.logo ? (
+                                    <img src={business.logo} alt="Business logo" className="h-full w-full object-cover" />
+                                ) : (
+                                    userInitial
+                                )}
+                            </div>
+                            <div className="min-w-0">
+                                <p className="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">{userProfile?.name || session.user.name || 'Business User'}</p>
+                                <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{userProfile?.email || session.user.email}</p>
+                            </div>
+                        </div>
+                    </div>
+
                     <div className="space-y-8">
                         {/* Section 1: Business Profile */}
                         <section>
                             <BusinessProfileForm
                                 initialName={business?.name}
                                 initialType={business?.type}
+                                initialLogo={business?.logo}
                                 onSuccess={() => {
                                     fetchBusiness()
                                     alert('Business profile updated successfully!')
@@ -131,9 +151,13 @@ export default function SettingsPage() {
                             <AccountSettingsForm
                                 initialName={userProfile?.name}
                                 initialEmail={userProfile?.email}
-                                onSuccess={async () => {
+                                onSuccess={async (updatedUser) => {
                                     await fetchUser()
-                                    await update() // Force NextAuth to refresh the session so NavBar updates
+                                    await update({
+                                        user: {
+                                            name: updatedUser?.name ?? userProfile?.name ?? null,
+                                        },
+                                    }) // Force NextAuth to refresh the session so NavBar updates
                                     alert('Account settings updated successfully!')
                                 }}
                             />

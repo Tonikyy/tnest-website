@@ -30,7 +30,7 @@ export async function GET(req: NextRequest | Request) {
       },
       include: {
         business: {
-          select: { id: true, name: true, type: true, address: true, latitude: true, longitude: true },
+          select: { id: true, name: true, type: true, logo: true, address: true, latitude: true, longitude: true },
         },
       },
       orderBy: { startTime: 'asc' },

@@ -3,14 +3,18 @@
 import Link from 'next/link'
 import { useSession, signOut } from 'next-auth/react'
 import { useState, useRef, useEffect } from 'react'
+import { usePathname } from 'next/navigation'
 import { useTheme } from 'next-themes'
 import Logo from './Logo'
 
 export default function Navbar() {
   const { data: session } = useSession()
+  const pathname = usePathname()
   const { theme, setTheme } = useTheme()
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const [mounted, setMounted] = useState(false)
+  const [profileImage, setProfileImage] = useState<string | null>(null)
+  const [imageRefreshKey, setImageRefreshKey] = useState(0)
   const dropdownRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -23,6 +27,46 @@ export default function Navbar() {
     document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
+
+  useEffect(() => {
+    const handleBrandingUpdated = () => setImageRefreshKey((prev) => prev + 1)
+    window.addEventListener('branding-updated', handleBrandingUpdated)
+
+    return () => {
+      window.removeEventListener('branding-updated', handleBrandingUpdated)
+    }
+  }, [])
+
+  useEffect(() => {
+    const fetchProfileImage = async () => {
+      if (!session?.user?.id) {
+        setProfileImage(null)
+        return
+      }
+
+      try {
+        if (session.user.role === 'BUSINESS') {
+          const businessResponse = await fetch('/api/business', { cache: 'no-store' })
+          if (businessResponse.ok) {
+            const businessData = await businessResponse.json()
+            if (businessData.logo) {
+              setProfileImage(businessData.logo)
+              return
+            }
+          }
+        }
+
+        const profileResponse = await fetch('/api/user/profile', { cache: 'no-store' })
+        if (!profileResponse.ok) return
+        const profileData = await profileResponse.json()
+        setProfileImage(profileData.image || null)
+      } catch {
+        setProfileImage(null)
+      }
+    }
+
+    fetchProfileImage()
+  }, [session?.user?.id, session?.user?.role, pathname, imageRefreshKey])
 
   return (
     <nav className="bg-white dark:bg-slate-500 shadow-sm border-b border-gray-200 dark:border-slate-400 sticky top-0 z-50 transition-colors duration-200">
@@ -63,7 +107,11 @@ export default function Navbar() {
                     className="flex items-center gap-2 p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors focus:outline-none focus:ring-2 focus:ring-primary/20"
                   >
                     <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs border border-primary/20">
-                      {session.user.email?.[0].toUpperCase()}
+                      {profileImage ? (
+                        <img src={profileImage} alt="Profile" className="w-full h-full object-cover rounded-full" />
+                      ) : (
+                        (session.user.name?.[0] || session.user.email?.[0] || '?').toUpperCase()
+                      )}
                     </div>
                     <svg className={`w-4 h-4 text-gray-400 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />

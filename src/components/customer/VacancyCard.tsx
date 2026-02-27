@@ -17,6 +17,7 @@ export interface VacancySearchItem {
     id: string
     name: string
     type: string
+    logo: string | null
     address: string | null
     latitude: number | null
     longitude: number | null
@@ -44,8 +45,12 @@ export default function VacancyCard({ vacancy, onBook, isBooking, isLoggedIn }: 
           {/* Business Info Header */}
           <div className="flex items-center gap-3 mb-4">
             {/* Avatar Placeholder */}
-            <div className="h-10 w-10 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-lg flex-shrink-0">
-              {businessInitial}
+            <div className="h-10 w-10 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-lg flex-shrink-0 overflow-hidden border border-primary/20">
+              {vacancy.business.logo ? (
+                <img src={vacancy.business.logo} alt="Business logo" className="h-full w-full object-cover" />
+              ) : (
+                businessInitial
+              )}
             </div>
             <div className="min-w-0">
               <h3 className="font-semibold text-gray-900 dark:text-gray-100 truncate">

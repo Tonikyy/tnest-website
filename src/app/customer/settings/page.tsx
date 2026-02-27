@@ -11,6 +11,7 @@ interface UserProfile {
   id: string
   name: string | null
   email: string
+  image: string | null
 }
 
 interface CustomerSettings {
@@ -96,6 +97,8 @@ export default function CustomerSettingsPage() {
     redirect('/dashboard/settings')
   }
 
+  const userInitial = (session.user.name?.[0] || session.user.email?.[0] || '?').toUpperCase()
+
   const savePreferences = async () => {
     setSavingSettings(true)
     setSettingsError(null)
@@ -173,14 +176,36 @@ export default function CustomerSettingsPage() {
           </p>
         </div>
 
+        <div className="mb-8 bg-white dark:bg-gray-900 rounded-lg border border-gray-100 dark:border-gray-800 shadow-sm p-4 transition-colors duration-200">
+          <div className="flex items-center gap-3">
+            <div className="h-12 w-12 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-sm overflow-hidden border border-primary/20">
+              {userProfile?.image ? (
+                <img src={userProfile.image} alt="Profile" className="h-full w-full object-cover" />
+              ) : (
+                userInitial
+              )}
+            </div>
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">{userProfile?.name || session.user.name || 'Customer'}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{userProfile?.email || session.user.email}</p>
+            </div>
+          </div>
+        </div>
+
         <div className="space-y-8">
           <section>
             <AccountSettingsForm
               initialName={userProfile?.name}
               initialEmail={userProfile?.email}
-              onSuccess={async () => {
+              initialImage={userProfile?.image}
+              enableProfileImage
+              onSuccess={async (updatedUser) => {
                 await fetchUser()
-                await update()
+                await update({
+                  user: {
+                    name: updatedUser?.name ?? userProfile?.name ?? null,
+                  },
+                })
                 alert('Account settings updated successfully!')
               }}
             />

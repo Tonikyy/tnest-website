@@ -22,6 +22,7 @@ interface Business {
   id: string
   name: string
   type: string
+  logo: string | null
   address: string | null
   latitude: number | null
   longitude: number | null
@@ -106,6 +107,8 @@ export default function DashboardPage() {
     redirect('/customer/dashboard')
   }
 
+  const userInitial = (session.user.name?.[0] || session.user.email?.[0] || '?').toUpperCase()
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
       <main className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
@@ -133,6 +136,8 @@ export default function DashboardPage() {
                 vacancies={vacancies}
                 onDelete={handleDeleteVacancy}
                 loading={loadingVacancies}
+                businessLogo={business?.logo}
+                businessName={business?.name || session?.user?.name || 'Business'}
               />
             </div>
           </div>
@@ -169,6 +174,19 @@ export default function DashboardPage() {
             {/* Business Info / Status Card */}
             <div className="bg-white dark:bg-gray-900 p-6 rounded-lg shadow-sm border border-gray-100 dark:border-gray-800 transition-colors duration-200">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Business Info</h3>
+              <div className="flex items-center gap-3 mb-4 pb-4 border-b border-gray-100 dark:border-gray-800">
+                <div className="h-12 w-12 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-sm overflow-hidden border border-primary/20">
+                  {business?.logo ? (
+                    <img src={business.logo} alt="Business logo" className="h-full w-full object-cover" />
+                  ) : (
+                    userInitial
+                  )}
+                </div>
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">{session.user.name || 'Business User'}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{session.user.email}</p>
+                </div>
+              </div>
               <div className="space-y-4">
                 <div>
                   <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Email</p>

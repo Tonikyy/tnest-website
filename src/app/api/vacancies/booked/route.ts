@@ -15,7 +15,7 @@ export async function GET() {
       where: { bookedById: session.user.id },
       include: {
         business: {
-          select: { id: true, name: true, type: true, address: true },
+          select: { id: true, name: true, type: true, logo: true, address: true },
         },
       },
       orderBy: { bookedAt: 'desc' },

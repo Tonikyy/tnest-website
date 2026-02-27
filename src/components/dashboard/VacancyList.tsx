@@ -19,9 +19,11 @@ interface VacancyListProps {
     vacancies: Vacancy[]
     onDelete: (id: string) => void
     loading: boolean
+    businessLogo?: string | null
+    businessName?: string
 }
 
-export default function VacancyList({ vacancies, onDelete, loading }: VacancyListProps) {
+export default function VacancyList({ vacancies, onDelete, loading, businessLogo, businessName = 'Business' }: VacancyListProps) {
     if (loading) {
         return (
             <div className="flex justify-center py-8">
@@ -45,16 +47,25 @@ export default function VacancyList({ vacancies, onDelete, loading }: VacancyLis
                     <li key={vacancy.id}>
                         <div className="px-4 py-4 sm:px-6 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
                             <div className="flex items-center justify-between">
-                                <div className="flex flex-col">
-                                    <p className="text-sm font-bold text-primary truncate">
-                                        {vacancy.serviceType}
-                                    </p>
-                                    <p className="text-sm text-gray-500 dark:text-gray-400">
-                                        {format(new Date(vacancy.startTime), 'p')} ({vacancy.duration} min)
-                                    </p>
-                                    <p className="text-xs text-gray-600 dark:text-gray-400 mt-0.5">
-                                        Customer pays {formatEur(vacancy.priceCents)} → You receive {formatEur(businessReceivesCents(vacancy.priceCents))} (fee €{PLATFORM_FEE_EUR})
-                                    </p>
+                                <div className="flex items-center gap-3 min-w-0">
+                                    <div className="h-10 w-10 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-sm overflow-hidden border border-primary/20 flex-shrink-0">
+                                        {businessLogo ? (
+                                            <img src={businessLogo} alt="Business logo" className="h-full w-full object-cover" />
+                                        ) : (
+                                            businessName.charAt(0).toUpperCase()
+                                        )}
+                                    </div>
+                                    <div className="flex flex-col min-w-0">
+                                        <p className="text-sm font-bold text-primary truncate">
+                                            {vacancy.serviceType}
+                                        </p>
+                                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                                            {format(new Date(vacancy.startTime), 'p')} ({vacancy.duration} min)
+                                        </p>
+                                        <p className="text-xs text-gray-600 dark:text-gray-400 mt-0.5 truncate">
+                                            Customer pays {formatEur(vacancy.priceCents)} → You receive {formatEur(businessReceivesCents(vacancy.priceCents))} (fee €{PLATFORM_FEE_EUR})
+                                        </p>
+                                    </div>
                                 </div>
                                 <div className="flex items-center space-x-4">
                                     <div className="flex flex-col items-end">

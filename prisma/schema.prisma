@@ -15,6 +15,7 @@ model User {
   email           String    @unique
   password        String
   name            String?
+  image           String?
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
   business        Business? @relation(fields: [businessId], references: [id])
@@ -43,6 +44,7 @@ model Business {
   id          String    @id @default(cuid())
   name        String
   type        String
+  logo        String?
   address     String?
   latitude    Float?
   longitude   Float?
